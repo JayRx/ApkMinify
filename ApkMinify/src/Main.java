@@ -11,7 +11,7 @@ import java.util.List;
 public class Main {
 
     public static void printUsage() {
-        System.out.println("Usage: apkMinify path -o outputPath -i [classesToIgnore...]");
+        System.out.println("Usage: apkMinify path -o outputPath -p packageName");
     }
 
     public static void main(String[] args) {
@@ -20,15 +20,11 @@ public class Main {
         if (args.length < 1) { printUsage(); return; }
 
         if (!args[1].equals("-o")) { printUsage(); return; }
-        if (!args[3].equals("-i")) { printUsage(); return; }
+        if (!args[3].equals("-p")) { printUsage(); return; }
 
         String path = args[0];
         String outputPath = args[2];
-
-        List<String> ignoreNames = new ArrayList<>();
-        for (int i = 4; i < args.length; i++) {
-            ignoreNames.add(args[i]);
-        }
+        String packageName = args[4];
 
         try {
             DexFile dexFile = DexFileFactory.loadDexFile(path, Opcodes.forApi(api));
@@ -37,13 +33,8 @@ public class Main {
 
             for (ClassDef classDef : dexFile.getClasses()) {
                 String aux = classDef.getType();
-                int ignoreCounter = 0;
 
-                for (String ignoreName : ignoreNames) {
-                    if (aux.startsWith(ignoreName)) ignoreCounter++;
-                }
-
-                if (ignoreCounter == 0) classes.add(classDef);
+                if (aux.startsWith(packageName)) classes.add(classDef);
             }
 
             dexFile = new ImmutableDexFile(Opcodes.forApi(api), classes);
